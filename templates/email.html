@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Password Reset</title>
+    <h1>Hello {{ user.username }}</h1>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+    
+    <style>
+      @media only screen and (min-width: 600px) {
+        body {
+          padding: 10px;
+        }
+        td {
+          margin: 0 auto;
+          text-align: center;
+        }
+        tr {
+          margin: 0 auto;
+          text-align: center;
+        }
+        table {
+          max-width: 100% !important;
+        }
+      }
+    </style>
+</head>
+<body>
+    <center style="width: 100%; table-layout: fixed; padding-top: 50px">
+      <table
+        width="100%"
+        style="
+          border-spacing: 0px;
+          margin: 0px auto;
+          width: 100%;
+          max-width: 600px;
+          font-family: sans-serif;
+          color: rgb(74, 74, 74);
+        "
+      >
+        <tbody>
+          <tr>
+            <td
+              height="10"
+              style="background-color: #8a80db; padding: 0px"
+            ></td>
+          </tr>
+          <tr>
+            <td align="center" style="padding-top: 20px">
+              <a
+                href="{% url 'reset_password' %}"
+                target="_blank"
+                ></a>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding: 0px; text-align: center">
+              <p style="font-size: 20px">
+                <strong>Reset password for birth and death</strong
+                ><span style="color: #8a80db; font-weight: bold">
+                  system.</span
+                >
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding: 0px">
+              <table
+                style="
+                  color: rgb(136, 136, 136);
+                  font-size: 16px;
+                  font-family: Ubuntu, sans-serif;
+                  line-height: 24px;
+                  border-spacing: 0px;
+                "
+              >
+                <tbody>
+                  <tr>
+                      <p>You have requested a password reset.</p>
+                    <p>Use the button to redirect you to the reset password page</p>
+                  </tr>
+                </tbody>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding: 20px 0px; text-align: center">
+              <a
+                style="
+                  font-size: 14px;
+                  padding: 10px 20px;
+                  text-decoration: none;
+                  border-radius: 5px;
+                  background-color: #8a80db;
+                  color: white;
+                  font-family: Ubuntu, sans-serif;
+                  font-weight: bold;
+                "
+                href="{{ reset_password_link }}"
+                >Reset Your Password</a
+              >
+            </td>
+          </tr>
+
+          <tr>
+            <td
+              style="
+                padding-top: 15px;
+                font-size: 14px;
+                color: #8a80db;
+                font-family: Ubuntu, sans-serif;
+                font-weight: bold;
+                text-align: center;
+              "
+            >
+              Email us :
+              <a
+                href="{% url 'reset_password' %}"
+                style="
+                  color: rgb(136, 136, 136);
+                  font-size: 15px;
+                  font-family: Ubuntu, sans-serif;
+                  text-decoration: none;
+                "
+                target="_blank"
+                >birthanddeath@beda.com</a
+              >
+            </td>
+          </tr>
+          <tr>
+            <td align="left" style="padding: 0px; text-align: center"></td>
+          </tr>
+        </tbody>
+      </table>
+    </center>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+</body>
+</html>
