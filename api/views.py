@@ -10,9 +10,9 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from api.models import User, Birth
+from api.models import User, Birth, Death
 from .serializers import UserSerializer, ProfileSerializer, ChangePasswordSerializer, ResetPasswordSerializer, \
-    ResetPasswordConfirmSerializer
+    ResetPasswordConfirmSerializer, BirthSerializer, DeathSerializer
 from rest_framework.authtoken.models import Token
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import login as auth_login
@@ -153,3 +153,95 @@ def count_items(request):
 
         # Return the count as JSON response
         return Response({'Total Number of Births': item_count})
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def birth_list(request):
+    """
+    List all births or create a new birth.
+    """
+    if request.method == 'GET':
+        births = Birth.objects.all()
+        serializer = BirthSerializer(births, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        serializer = BirthSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def birth_detail(request, pk):
+    """
+    Retrieve, update or delete a birth instance.
+    """
+    try:
+        birth = Birth.objects.get(pk=pk)
+    except Birth.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = BirthSerializer(birth)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = BirthSerializer(birth, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        birth.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def death_list(request):
+    """
+    List all births or create a new birth.
+    """
+    if request.method == 'GET':
+        deaths = Death.objects.all()
+        serializer = DeathSerializer(deaths, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        serializer = DeathSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def death_detail(request, pk):
+    """
+    Retrieve, update or delete a birth instance.
+    """
+    try:
+        death = Death.objects.get(pk=pk)
+    except Birth.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = DeathSerializer(death)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = DeathSerializer(death, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        death.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

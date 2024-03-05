@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Profile
+from .models import User, Profile, Birth, Death
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -38,3 +38,14 @@ class ResetPasswordSerializer(serializers.Serializer):
 class ResetPasswordConfirmSerializer(serializers.Serializer):
     new_password = serializers.CharField(required=True)
 
+
+class BirthSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Birth
+        fields = '__all__'
+
+
+class DeathSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Death
+        fields = '__all__'
