@@ -228,7 +228,7 @@ def death_detail(request, pk):
     """
     try:
         death = Death.objects.get(pk=pk)
-    except Birth.DoesNotExist:
+    except Death.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':
