@@ -146,13 +146,23 @@ def reset_password_confirm(request, uidb64, token):
 
 
 @api_view(['GET'])
-def count_items(request):
+def count_births(request):
     if request.method == 'GET':
         # Count the number of items in the database for YourModel
         item_count = Birth.objects.count()
 
         # Return the count as JSON response
         return Response({'Total Number of Births': item_count})
+
+
+@api_view(['GET'])
+def count_deaths(request):
+    if request.method == 'GET':
+        # Count the number of items in the database for YourModel
+        item_count = Death.objects.count()
+
+        # Return the count as JSON response
+        return Response({'Total Number of Deaths': item_count})
 
 
 @api_view(['GET', 'POST'])
