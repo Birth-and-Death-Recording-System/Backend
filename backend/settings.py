@@ -160,4 +160,5 @@ EMAIL_PORT = "25"
 CORS_ALLOWED_ORIGINS = [
     "http://*",
     "https://*",
+    "http://localhost:4200"
 ]
