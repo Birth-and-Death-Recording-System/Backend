@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import User, Profile, Birth, Death
+from .models import User, Profile, Birth, Death, DeathRecord, BirthRecord
+from .models import ActionLog
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -48,3 +49,21 @@ class DeathSerializer(serializers.ModelSerializer):
     class Meta:
         model = Death
         fields = '__all__'
+
+
+class ActionLogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ActionLog
+        fields = '__all__'
+
+
+class DeathRecordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DeathRecord
+        fields = ['id', 'recorder', 'recorded_at', 'action_type', 'details']
+
+
+class BirthRecordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BirthRecord
+        fields = ['id', 'recorder', 'recorded_at', 'action_type', 'details']

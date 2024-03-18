@@ -5,17 +5,19 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from rest_framework import status
+from rest_framework import status, viewsets, generics
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from api.models import User, Birth, Death
+from api.models import User, Birth, Death, DeathRecord, BirthRecord
 from .serializers import UserSerializer, ProfileSerializer, ChangePasswordSerializer, ResetPasswordSerializer, \
-    ResetPasswordConfirmSerializer, BirthSerializer, DeathSerializer
+    ResetPasswordConfirmSerializer, BirthSerializer, DeathSerializer, DeathRecordSerializer, BirthRecordSerializer
 from rest_framework.authtoken.models import Token
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import login as auth_login
+from .models import ActionLog
+from .serializers import ActionLogSerializer
 
 
 # Create your views here.
@@ -255,3 +257,18 @@ def death_detail(request, pk):
     elif request.method == 'DELETE':
         death.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ActionLogViewSet(viewsets.ModelViewSet):
+    queryset = ActionLog.objects.all()
+    serializer_class = ActionLogSerializer
+
+
+class DeathRecordListCreateAPIView(generics.ListCreateAPIView):
+    queryset = DeathRecord.objects.all()
+    serializer_class = DeathRecordSerializer
+
+
+class BirthRecordListCreateAPIView(generics.ListCreateAPIView):
+    queryset = BirthRecord.objects.all()
+    serializer_class = BirthRecordSerializer

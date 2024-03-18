@@ -1,8 +1,14 @@
-from django.urls import path
+from django.urls import path, include
 
 from api import views
+from rest_framework.routers import DefaultRouter
+from .views import ActionLogViewSet, DeathRecordListCreateAPIView, BirthRecordListCreateAPIView
+
+router = DefaultRouter()
+router.register(r'action-logs', ActionLogViewSet)
 
 urlpatterns = [
+    path('', include(router.urls)),
     path('signup/', views.signup, name='signup'),
     path('login/', views.login_user, name='login'),
     path('profile/', views.user_profile, name='profile'),
@@ -15,4 +21,7 @@ urlpatterns = [
     path('births/<int:pk>/', views.birth_detail, name='birth_detail'),
     path('deaths/', views.death_list, name='deaths'),
     path('deaths/<int:pk>/', views.death_detail, name='death_detail'),
+    path('death-records/', DeathRecordListCreateAPIView.as_view(), name='death_record_list_create'),
+    path('birth-records/', BirthRecordListCreateAPIView.as_view(), name='birth_record_list_create'),
+
 ]

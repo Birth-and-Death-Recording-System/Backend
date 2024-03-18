@@ -33,6 +33,7 @@ class Profile(models.Model):
     email = models.EmailField('Email', null=False)
     phone_number = models.IntegerField('Phone Number', blank=True, default=0000000000)
     gender = models.CharField('Gender', max_length=10)
+
     # profile_pic = models.ImageField('Profile, Image', upload_to='profile_pics', default='default.jpg')
 
     def __str__(self):
@@ -122,3 +123,41 @@ class Death(models.Model):
 
     def __str__(self):
         return self.first_name
+
+
+class ActionLog(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    action_type = models.CharField(max_length=100)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    details = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.user.username + " - " + self.action_type
+
+
+# models.py
+
+
+class BirthRecord(models.Model):
+    recorder = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    birth = models.ForeignKey(Birth, on_delete=models.CASCADE, null=True)
+    recorded_at = models.DateTimeField(auto_now_add=True, null=True)
+    action_type = models.CharField(max_length=50, default="Birth recorded")
+    details = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return self.recorder.username + " - " + self.birth.First_Name
+
+
+class DeathRecord(models.Model):
+    recorder = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    death = models.ForeignKey(Death, on_delete=models.CASCADE, null=True)
+    recorded_at = models.DateTimeField(auto_now_add=True, null=True)
+    action_type = models.CharField(max_length=50, default="Death recorded")
+    details = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        if self.death:
+            return f"{self.recorder.username} - {self.death.first_name}"
+        else:
+            return f"{self.recorder.username} - [Deleted Death]"
