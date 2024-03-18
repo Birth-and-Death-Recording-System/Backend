@@ -33,7 +33,7 @@ class Profile(models.Model):
     email = models.EmailField('Email', null=False)
     phone_number = models.IntegerField('Phone Number', blank=True, default=0000000000)
     gender = models.CharField('Gender', max_length=10)
-    profile_pic = models.ImageField('Profile, Image', upload_to='profile_pics', default='default.jpg')
+    # profile_pic = models.ImageField('Profile, Image', upload_to='profile_pics', default='default.jpg')
 
     def __str__(self):
         return f'{self.user.username} Profile'
