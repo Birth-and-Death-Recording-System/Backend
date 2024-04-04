@@ -1,6 +1,8 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError
 from django.core.mail import EmailMultiAlternatives
+from django.db.models import Count
+from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.encoding import force_bytes, force_str
@@ -26,7 +28,7 @@ def login_user(request):
     user = get_object_or_404(User, username=request.data['username'])
     if not user.check_password(request.data['password']):
         return Response({"detail": "Invalid Credentials"}, status=status.HTTP_401_UNAUTHORIZED)
-    token, created = Token.objects.get_or_create(user=user)
+    token, _ = Token.objects.get_or_create(user=user)
     auth_login(request, user)
     serializer = UserSerializer(instance=user)
     return Response({"token": token.key, "user": serializer.data}, status=status.HTTP_200_OK)
@@ -37,10 +39,9 @@ def signup(request):
     serializer = UserSerializer(data=request.data)
     if serializer.is_valid():
         user = serializer.save()
-        # user = User.objects.get(username=request.data['username'])
         user.set_password(request.data['password'])
         user.save()
-        token, created = Token.objects.get_or_create(user=user)
+        token, _ = Token.objects.get_or_create(user=user)
         return Response({'token': token.key, "user": serializer.data}, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -272,3 +273,15 @@ class DeathRecordListCreateAPIView(generics.ListCreateAPIView):
 class BirthRecordListCreateAPIView(generics.ListCreateAPIView):
     queryset = BirthRecord.objects.all()
     serializer_class = BirthRecordSerializer
+
+
+@api_view(['GET'])
+def birth_chart(request):
+    births_data = Birth.objects.values('date').annotate(count=Count('date'))
+    return JsonResponse(list(births_data), safe=False)
+
+
+@api_view(['GET'])
+def death_chart(request):
+    deaths_data = Death.objects.values('date').annotate(count=Count('date'))
+    return JsonResponse(list(deaths_data), safe=False)

@@ -23,5 +23,7 @@ urlpatterns = [
     path('deaths/<int:pk>/', views.death_detail, name='death_detail'),
     path('death-records/', DeathRecordListCreateAPIView.as_view(), name='death_record_list_create'),
     path('birth-records/', BirthRecordListCreateAPIView.as_view(), name='birth_record_list_create'),
+    path('birth-chart/', views.birth_chart, name='birth_chart'),
+    path('death-chart/', views.death_chart, name='death_chart'),
 
 ]

@@ -44,7 +44,7 @@ class Birth(models.Model):
     First_Name = models.CharField('First Name', max_length=255, blank=True)
     Last_Name = models.CharField('Last Name', max_length=255, blank=True)
     Other_Name = models.CharField('Other Names', max_length=255, blank=True)
-    date_of_birth = models.DateField('Date of Birth')
+    date = models.DateField('Date of Birth')
     gender = models.CharField(max_length=255, choices=GENDER_CHOICES, default='M')
     City = models.CharField('City', max_length=255)
     Place_of_Birth = models.CharField('Place Of Birth', max_length=255)
@@ -106,7 +106,7 @@ class Death(models.Model):
     ID_Number = models.CharField("ID_Number", max_length=255, blank=True)
     Residence_addr = models.CharField("Residence Address", max_length=255)
     # Deceased Identification Particulars
-    Date_of_Death = models.DateField("Death Date", blank=True)
+    date = models.DateField("Death Date", blank=True)
     Cause_of_Death = models.TextField("Cause of Death", blank=True)
     Place_of_Death = models.TextField("Place of Death", blank=True)
     Address_of_place = models.TextField("Address of Place", blank=True)
@@ -140,7 +140,7 @@ class BirthRecord(models.Model):
     birth = models.ForeignKey(Birth, on_delete=models.CASCADE, null=True)
     recorded_at = models.DateTimeField(auto_now_add=True, null=True)
     action_type = models.CharField(max_length=50, default="Birth recorded")
-    details = models.TextField(blank=True)
+    details = models.TextField(blank=True, default="none")
 
     def __str__(self):
         return self.recorder.username + " - " + self.birth.First_Name
@@ -151,7 +151,7 @@ class DeathRecord(models.Model):
     death = models.ForeignKey(Death, on_delete=models.CASCADE, null=True)
     recorded_at = models.DateTimeField(auto_now_add=True, null=True)
     action_type = models.CharField(max_length=50, default="Death recorded")
-    details = models.TextField(blank=True)
+    details = models.TextField(blank=True, default="none")
 
     def __str__(self):
         if self.death:
