@@ -154,7 +154,7 @@ def count_births(request):
         item_count = Birth.objects.count()
 
         # Return the count as JSON response
-        return Response({'Total Number of Births': item_count})
+        return Response({'count': item_count})
 
 
 @api_view(['GET'])
@@ -164,7 +164,7 @@ def count_deaths(request):
         item_count = Death.objects.count()
 
         # Return the count as JSON response
-        return Response({'Total Number of Deaths': item_count})
+        return Response({'count': item_count})
 
 
 @api_view(['GET', 'POST'])

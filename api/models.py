@@ -34,8 +34,6 @@ class Profile(models.Model):
     phone_number = models.IntegerField('Phone Number', blank=True, default=0000000000)
     gender = models.CharField('Gender', max_length=10)
 
-    # profile_pic = models.ImageField('Profile, Image', upload_to='profile_pics', default='default.jpg')
-
     def __str__(self):
         return f'{self.user.username} Profile'
 
@@ -71,7 +69,6 @@ class Birth(models.Model):
     Mother_DOB = models.DateField("Mother's DOB", max_length=255)
     Mother_Phone_Number = models.IntegerField("Mother's Phone Number", blank=True, default=0000000000)
 
-    # DisplayFields = ['CIN', 'First_Name', 'Last_Name']
     def __str__(self):
         return self.CIN + " " + self.First_Name
 
@@ -143,7 +140,7 @@ class BirthRecord(models.Model):
     birth = models.ForeignKey(Birth, on_delete=models.CASCADE, null=True)
     recorded_at = models.DateTimeField(auto_now_add=True, null=True)
     action_type = models.CharField(max_length=50, default="Birth recorded")
-    details = models.TextField(null=True, blank=True)
+    details = models.TextField(blank=True)
 
     def __str__(self):
         return self.recorder.username + " - " + self.birth.First_Name
@@ -154,7 +151,7 @@ class DeathRecord(models.Model):
     death = models.ForeignKey(Death, on_delete=models.CASCADE, null=True)
     recorded_at = models.DateTimeField(auto_now_add=True, null=True)
     action_type = models.CharField(max_length=50, default="Death recorded")
-    details = models.TextField(null=True, blank=True)
+    details = models.TextField(blank=True)
 
     def __str__(self):
         if self.death:
