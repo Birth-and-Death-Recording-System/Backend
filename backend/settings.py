@@ -60,8 +60,8 @@ SWAGGER_SETTINGS = {
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.BasicAuthentication',
+        # 'rest_framework.authentication.TokenAuthentication',
     )
 }
 
@@ -164,3 +164,17 @@ CORS_ALLOWED_ORIGINS = [
     "https://*",
     "http://localhost:4200"
 ]
+
+DATE_INPUT_FORMATS = [
+    '%Y-%m-%d',  # 'yyyy-mm-dd'
+    '%m/%d/%Y',  # 'mm/dd/yyyy'
+    '%m/%d/%y',  # 'mm/dd/yy'
+    '%d/%m/%Y',  # 'dd/mm/yyyy'
+    '%d/%m/%y',  # 'dd/mm/yy'
+    '/%m/%d/%Y',  # '/mm/dd/yyyy'
+    '/%m/%d/%y',  # '/mm/dd/yy'
+]
+
+LOGIN_REDIRECT_URL = 'http://localhost:8000/births/'
+CSRF_COOKIE_SECURE = True  # Set to True if using HTTPS
+CSRF_COOKIE_HTTPONLY = True

@@ -39,7 +39,7 @@ class Profile(models.Model):
 
 
 class Birth(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='birth', null=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user', null=True)
     CIN = models.CharField('CIN', max_length=50, unique=True, blank=True)
     First_Name = models.CharField('First Name', max_length=255, blank=True)
     Last_Name = models.CharField('Last Name', max_length=255, blank=True)
@@ -55,7 +55,7 @@ class Birth(models.Model):
     # Particulars of Father
     Father_First_Name = models.CharField("Father's First Name", max_length=255, blank=True)
     Father_Last_Name = models.CharField("Father's Last Name", max_length=255, blank=True)
-    Father_Nationality = CountryField("Father's Nationality", max_length=255, blank_label="(select country)")
+    Father_Nationality = models.CharField("Father's Nationality", max_length=255)
     Father_ID_type = models.CharField("Father's ID Type", max_length=255, choices=ID_CHOICES, blank=True)
     Father_ID_Number = models.CharField("Father's ID Number", max_length=255, blank=True)
     Father_DOB = models.DateField("Father's DOB", max_length=255, blank=True)
@@ -63,7 +63,7 @@ class Birth(models.Model):
     # Particulars of Mother
     Mother_First_Name = models.CharField("Mother's First Name", max_length=255, blank=True)
     Mother_Last_Name = models.CharField("Mother's Last Name", max_length=255, blank=True)
-    Mother_Nationality = CountryField("Mother's Nationality", max_length=255, blank_label="(select country)")
+    Mother_Nationality = models.CharField("Mother's Nationality", max_length=255)
     Mother_ID_type = models.CharField("Mother's ID Type", max_length=255, choices=ID_CHOICES, blank=True)
     Mother_ID_number = models.CharField("Mother's ID Number", max_length=255)
     Mother_DOB = models.DateField("Mother's DOB", max_length=255)
@@ -94,14 +94,14 @@ class Birth(models.Model):
 
 
 class Death(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="deaths")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="deaths", null=True)
     surname = models.CharField("Surname", max_length=255, blank=True)
     first_name = models.CharField("First Name", max_length=255, blank=True)
     Other_Name = models.CharField("Other Name", max_length=255, blank=True)
     birth_date = models.DateField("Birth Date", blank=True)
     Gender = models.CharField("Gender", max_length=1, choices=GENDER_CHOICES)
     Burial_Status = models.CharField("Burial Status", max_length=1, choices=BURIAL_CHOICES, default='N', blank=True)
-    Nationality = CountryField("Nationality")
+    Nationality = models.CharField("Nationality", max_length=255)
     ID_Type = models.CharField("ID_Type", choices=ID_CHOICES, max_length=1, blank=True)
     ID_Number = models.CharField("ID_Number", max_length=255, blank=True)
     Residence_addr = models.CharField("Residence Address", max_length=255)
@@ -143,7 +143,10 @@ class BirthRecord(models.Model):
     details = models.TextField(blank=True, default="none")
 
     def __str__(self):
-        return self.recorder.username + " - " + self.birth.First_Name
+        if self.recorder and self.recorder.username:
+            return f"{self.recorder.username} - {self.birth.First_Name if self.birth else 'No Birth'}"
+        else:
+            return "Recorder is None - No Birth Record"
 
 
 class DeathRecord(models.Model):

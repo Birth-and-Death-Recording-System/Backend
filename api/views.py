@@ -7,8 +7,8 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from rest_framework import status, viewsets, generics
-from rest_framework.authentication import TokenAuthentication, BasicAuthentication
+from rest_framework import status, viewsets, generics, permissions
+from rest_framework.authentication import TokenAuthentication, BasicAuthentication, SessionAuthentication
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -25,6 +25,7 @@ from .serializers import ActionLogSerializer
 
 
 @api_view(['POST'])
+@permission_classes([permissions.AllowAny])
 def login_user(request):
     try:
         serializer = UserLoginSerializer(data=request.data)
@@ -33,8 +34,10 @@ def login_user(request):
             password = serializer.validated_data['password']
             user = authenticate(username=username, password=password)
             if user is not None:
+                auth_login(request, user)
+                token, _ = Token.objects.get_or_create(user=user)
                 return Response(data={
-                    'token': user.auth_token.key,
+                    'token': token.key,
                     'status': status.HTTP_200_OK,
                     'userData': {
                         'username': user.username,
@@ -189,7 +192,7 @@ def count_deaths(request):
 
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
-@authentication_classes([TokenAuthentication, BasicAuthentication])
+@authentication_classes([SessionAuthentication, TokenAuthentication, BasicAuthentication])
 def birth_list(request):
     """
     List all births or create a new birth.
@@ -200,11 +203,19 @@ def birth_list(request):
         return Response(serializer.data)
 
     elif request.method == 'POST':
-        serializer = BirthSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            if not request.data:
+                return Response({'error': 'No births data provided'}, status=status.HTTP_400_BAD_REQUEST)
+            serializer = BirthSerializer(data=request.data)
+            if serializer.is_valid():
+                # Decide whether to use request.user or data provided in request
+                user = request.user if request.user.is_authenticated else None
+                serializer.save(user=user)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response({'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        except ValidationError as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
@@ -308,3 +319,18 @@ def birth_chart(request):
 def death_chart(request):
     deaths_data = Death.objects.values('date').annotate(count=Count('date'))
     return JsonResponse(list(deaths_data), safe=False)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def logout(request):
+    request.session.flush()
+
+    # Invalidate token (if using token authentication)
+    try:
+        token = Token.objects.get(user=request.user)
+        token.delete()
+    except Token.DoesNotExist:
+        pass
+
+    return Response({"detail": "Logged out successfully."}, status=status.HTTP_200_OK)

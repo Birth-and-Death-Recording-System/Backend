@@ -36,15 +36,17 @@ def delete_profile(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Birth)
 def log_birth_record_creation(sender, instance, created, **kwargs):
-    action_type = 'Birth recorded' if created else 'Birth updated'
 
-    details1 = f"{action_type}: {instance.user.username} - {instance.First_Name}"
-    BirthRecord.objects.create(
-        recorder=instance.user,
-        birth=instance,
-        action_type=action_type,
-        details=details1
-    )
+    if created and instance.user is not None:
+        # Ensure user is not None
+        action_type = 'Birth recorded' if created else 'Birth updated'
+        details = f"{action_type}: {instance.user.username} - {instance.First_Name}"
+        BirthRecord.objects.create(
+            recorder=instance.user,
+            birth=instance,
+            action_type=action_type,
+            details=details
+        )
 
 
 @receiver(post_save, sender=Death)
