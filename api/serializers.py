@@ -9,6 +9,11 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'first_name', 'last_name', 'email', 'username', 'role', 'gender']
 
 
+class UserLoginSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField()
+
+
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
@@ -25,9 +30,8 @@ class ChangePasswordSerializer(serializers.Serializer):
         current_password = attrs.get('current_password')
         repeat_password = attrs.get('repeat_password')
         new_password = attrs.get('new_password')
-        if current_password:
-            if current_password != repeat_password:
-                raise serializers.ValidationError("Current password and repeat password do not match")
+        if current_password and current_password != repeat_password:
+            raise serializers.ValidationError("Current password and repeat password do not match")
         return attrs
 
 

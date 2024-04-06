@@ -8,30 +8,47 @@ from django.urls import reverse
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from rest_framework import status, viewsets, generics
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.authentication import TokenAuthentication, BasicAuthentication
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from api.models import User, Birth, Death, DeathRecord, BirthRecord
 from .serializers import UserSerializer, ProfileSerializer, ChangePasswordSerializer, ResetPasswordSerializer, \
-    ResetPasswordConfirmSerializer, BirthSerializer, DeathSerializer, DeathRecordSerializer, BirthRecordSerializer
+    ResetPasswordConfirmSerializer, BirthSerializer, DeathSerializer, DeathRecordSerializer, BirthRecordSerializer, \
+    UserLoginSerializer
 from rest_framework.authtoken.models import Token
 from django.shortcuts import get_object_or_404
-from django.contrib.auth import login as auth_login
+from django.contrib.auth import login as auth_login, authenticate
 from .models import ActionLog
 from .serializers import ActionLogSerializer
 
 
-# Create your views here.
 @api_view(['POST'])
 def login_user(request):
-    user = get_object_or_404(User, username=request.data['username'])
-    if not user.check_password(request.data['password']):
-        return Response({"detail": "Invalid Credentials"}, status=status.HTTP_401_UNAUTHORIZED)
-    token, _ = Token.objects.get_or_create(user=user)
-    auth_login(request, user)
-    serializer = UserSerializer(instance=user)
-    return Response({"token": token.key, "user": serializer.data}, status=status.HTTP_200_OK)
+    try:
+        serializer = UserLoginSerializer(data=request.data)
+        if serializer.is_valid():
+            username = serializer.validated_data['username']
+            password = serializer.validated_data['password']
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                return Response(data={
+                    'token': user.auth_token.key,
+                    'status': status.HTTP_200_OK,
+                    'userData': {
+                        'username': user.username,
+                        'email': user.email,
+                        'first_name': user.first_name,
+                        'last_name': user.last_name,
+                    }
+                })
+            else:
+                return Response({'detail': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    except ValidationError as e:
+        return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])
@@ -48,6 +65,7 @@ def signup(request):
 
 @api_view(['GET', 'PUT'])
 @permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
 def user_profile(request):
     profile = request.user.profile
     if request.method == 'GET':
@@ -64,6 +82,7 @@ def user_profile(request):
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
 def change_password(request):
     serializer = ChangePasswordSerializer(data=request.data)
     if serializer.is_valid():
@@ -170,6 +189,7 @@ def count_deaths(request):
 
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication, BasicAuthentication])
 def birth_list(request):
     """
     List all births or create a new birth.
@@ -189,6 +209,7 @@ def birth_list(request):
 
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
 def birth_detail(request, pk):
     """
     Retrieve, update or delete a birth instance.
@@ -215,7 +236,8 @@ def birth_detail(request, pk):
 
 
 @api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
+# @permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
 def death_list(request):
     """
     List all births or create a new birth.
@@ -235,6 +257,7 @@ def death_list(request):
 
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
 def death_detail(request, pk):
     """
     Retrieve, update or delete a birth instance.

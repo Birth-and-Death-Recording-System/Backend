@@ -38,7 +38,6 @@ def delete_profile(sender, instance, **kwargs):
 def log_birth_record_creation(sender, instance, created, **kwargs):
     action_type = 'Birth recorded' if created else 'Birth updated'
 
-    # details = f"{action_type}: Birth of '{instance.First_Name} {instance.Last_Name}' recorded by '{instance.user.username}' at {instance.date} in {instance.Place_of_Birth}."
     details1 = f"{action_type}: {instance.user.username} - {instance.First_Name}"
     BirthRecord.objects.create(
         recorder=instance.user,
@@ -52,7 +51,6 @@ def log_birth_record_creation(sender, instance, created, **kwargs):
 def log_death_record_creation(sender, instance, created, **kwargs):
     action_type = 'Death recorded' if created else 'Death updated'
 
-    # details = f"{action_type}: Death of '{instance.first_name} {instance.surname}' recorded by '{instance.user.username}' at {instance.date} in {instance.Place_of_Death}."
     details1 = f"{action_type}: {instance.user.username} - {instance.first_name}"
     DeathRecord.objects.create(
         recorder=instance.user,
