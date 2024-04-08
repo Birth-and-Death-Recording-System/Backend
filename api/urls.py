@@ -26,5 +26,6 @@ urlpatterns = [
     path('birth-chart/', views.birth_chart, name='birth_chart'),
     path('death-chart/', views.death_chart, name='death_chart'),
     path('logout/', views.logout, name='logout'),
+    path('search/', views.search_records, name='search_records'),
 
 ]

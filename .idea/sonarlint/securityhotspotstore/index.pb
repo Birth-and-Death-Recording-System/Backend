@@ -17,3 +17,11 @@ C
 backend/settings.py,e\3\e3b66993770b8bd17727389114408abe2710d4f6
 ?
 backend/urls.py,e\8\e86ee5a9c15adf9e0f1eef0379032fc6cd65bd41
+n
+>api/migrations/0023_alter_birth_father_nationality_and_more.py,f\0\f04a32aeaeaa5593febc589f4115e7152e7536e4
+W
+'api/migrations/0024_alter_birth_user.py,d\2\d2e1e3f586b2110cf3f962882c774f409ea47e02
+o
+?api/migrations/0025_alter_death_nationality_alter_death_user.py,5\2\5254591c56d89a739d2757143ad6e4cb77cca304
+7
+rand.py,8\5\855b5d5b806f7b2aec9043a898633a0dd09eb486

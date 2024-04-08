@@ -1,7 +1,7 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError
 from django.core.mail import EmailMultiAlternatives
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -23,6 +23,10 @@ from django.contrib.auth import login as auth_login, authenticate
 from .models import ActionLog
 from .serializers import ActionLogSerializer
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
@@ -40,6 +44,7 @@ def login_user(request):
                     'token': token.key,
                     'status': status.HTTP_200_OK,
                     'userData': {
+                        'id': user.id,
                         'username': user.username,
                         'email': user.email,
                         'first_name': user.first_name,
@@ -334,3 +339,36 @@ def logout(request):
         pass
 
     return Response({"detail": "Logged out successfully."}, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def search_records(request):
+    search_query = request.query_params.get('search', '')
+
+    # Filter Birth and Death records based on search query
+    births = Birth.objects.filter(
+        Q(First_Name__icontains=search_query) |
+        Q(Last_Name__icontains=search_query) |
+        Q(gender__icontains=search_query) |
+        Q(date__icontains=search_query) |
+        Q(Place_of_Birth__icontains=search_query) |
+        Q(City__icontains=search_query)
+    )
+
+    deaths = Death.objects.filter(
+        Q(surname__icontains=search_query) |
+        Q(date__icontains=search_query) |
+        Q(Place_of_Death__icontains=search_query)
+    )
+
+    # Serialize the filtered queryset
+    birth_serializer = BirthSerializer(births, many=True)
+    death_serializer = DeathSerializer(deaths, many=True)
+
+    # Combine the serialized data from both models
+    data = {
+        'births': birth_serializer.data,
+        'deaths': death_serializer.data
+    }
+
+    return Response(data)
