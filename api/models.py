@@ -32,7 +32,7 @@ class Profile(models.Model):
     birth_date = models.DateField('Birth', blank=True, null=True)
     email = models.EmailField('Email', null=False)
     phone_number = models.IntegerField('Phone Number', blank=True, default=0000000000)
-    gender = models.CharField('Gender', max_length=10)
+    gender = models.CharField('Gender', max_length=10, choices=GENDER_CHOICES, default='M')
 
     def __str__(self):
         return f'{self.user.username} Profile'
