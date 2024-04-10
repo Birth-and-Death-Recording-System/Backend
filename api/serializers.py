@@ -23,14 +23,15 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 class ChangePasswordSerializer(serializers.Serializer):
     current_password = serializers.CharField(required=True, max_length=255)
-    repeat_password = serializers.CharField(required=True)
     new_password = serializers.CharField(required=True)
+    confirm_password = serializers.CharField(required=True)
 
     def validate(self, attrs):
         current_password = attrs.get('current_password')
-        repeat_password = attrs.get('repeat_password')
         new_password = attrs.get('new_password')
-        if current_password and current_password != repeat_password:
+        confirm_password = attrs.get('confirm_password')
+
+        if current_password and new_password != confirm_password:
             raise serializers.ValidationError("Current password and repeat password do not match")
         return attrs
 

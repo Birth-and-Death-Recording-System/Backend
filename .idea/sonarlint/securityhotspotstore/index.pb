@@ -25,3 +25,7 @@ o
 ?api/migrations/0025_alter_death_nationality_alter_death_user.py,5\2\5254591c56d89a739d2757143ad6e4cb77cca304
 7
 rand.py,8\5\855b5d5b806f7b2aec9043a898633a0dd09eb486
+D
+templates/email.html,c\a\cad3aa69d86d55ffe2e5f6261d7c4f5576919545
+R
+"templates/reset_password_email.txt,5\b\5b5f5eb2dcad3984d6544507506fe04c601baed2

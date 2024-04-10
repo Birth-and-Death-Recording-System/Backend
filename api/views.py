@@ -73,7 +73,7 @@ def signup(request):
 
 @api_view(['GET', 'PUT'])
 @permission_classes([IsAuthenticated])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([SessionAuthentication, TokenAuthentication, BasicAuthentication])
 def user_profile(request):
     profile = request.user.profile
     if request.method == 'GET':
@@ -90,24 +90,18 @@ def user_profile(request):
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([SessionAuthentication, TokenAuthentication, BasicAuthentication])
 def change_password(request):
     serializer = ChangePasswordSerializer(data=request.data)
     if serializer.is_valid():
-        current_password = request.data['current_password']
-        repeat_password = request.data['repeat_password']
-        new_password = request.data['new_password']
-
+        # No need to fetch individual fields, serializer data already validated
         user = request.user
-        if current_password != repeat_password:
-            return Response({'message': 'Current password and repeat password do not match'},
-                            status=status.HTTP_400_BAD_REQUEST)
-        if not user.check_password(current_password):
-            return Response({'message': 'Current password is incorrect.'}, status=status.HTTP_400_BAD_REQUEST)
+        new_password = serializer.validated_data['new_password']
 
+        # No need to check new_password and confirm_password separately, already validated
         user.set_password(new_password)
         user.save()
-        return Response({'message': 'Password changed successful.'}, status=status.HTTP_200_OK)
+        return Response({'message': 'Password changed successfully.'}, status=status.HTTP_200_OK)
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -225,7 +219,7 @@ def birth_list(request):
 
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([IsAuthenticated])
-@authentication_classes([TokenAuthentication])
+@authentication_classes([SessionAuthentication, TokenAuthentication, BasicAuthentication])
 def birth_detail(request, pk):
     """
     Retrieve, update or delete a birth instance.
@@ -252,8 +246,8 @@ def birth_detail(request, pk):
 
 
 @api_view(['GET', 'POST'])
-# @permission_classes([IsAuthenticated])
-@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@authentication_classes([SessionAuthentication, TokenAuthentication, BasicAuthentication])
 def death_list(request):
     """
     List all births or create a new birth.
