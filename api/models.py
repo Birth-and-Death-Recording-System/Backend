@@ -87,11 +87,6 @@ class Birth(models.Model):
             self.CIN = unique_numbers()
         super().save(*args, **kwargs)
 
-        if not self.user_id:
-            # Set default value for user if not provided
-            self.user = User.objects.get(username='default_username')
-        super(Birth, self).save(*args, **kwargs)
-
 
 class Death(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="deaths", null=True)

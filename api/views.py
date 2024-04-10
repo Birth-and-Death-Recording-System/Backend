@@ -208,9 +208,7 @@ def birth_list(request):
                 return Response({'error': 'No births data provided'}, status=status.HTTP_400_BAD_REQUEST)
             serializer = BirthSerializer(data=request.data)
             if serializer.is_valid():
-                # Decide whether to use request.user or data provided in request
-                user = request.user if request.user.is_authenticated else None
-                serializer.save(user=user)
+                serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response({'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         except ValidationError as e:
