@@ -5,7 +5,7 @@ based on years.
 # Table of Contents
 1. [Features](#features)
 2. [User Roles](#user-roles)
-3. [Dashboards](#dashboards)
+3. [Dashboard](#dashboard)
 4. [Prerequisites](#prerequisites)
 5. [Installation](#installation)
 6. [Usage](#usage)
@@ -89,3 +89,6 @@ Click on the delete and edit icon to edit or update field record.
 6. **Log Out**:
 
     Log out by clicking on log out button.
+
+
+**Warning**:This project needs serious update as the time of writing this documentation `27th August, 2024`.
