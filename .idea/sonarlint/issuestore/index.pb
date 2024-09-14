@@ -29,3 +29,9 @@ D
 templates/email.html,c\a\cad3aa69d86d55ffe2e5f6261d7c4f5576919545
 R
 "templates/reset_password_email.txt,5\b\5b5f5eb2dcad3984d6544507506fe04c601baed2
+;
+api/apps.py,9\a\9a8032ee9d0071a4b4f5bddb03125d8236020c01
+9
+	README.md,8\e\8ec9a00bfd09b3190ac6b22251dbb1aa95a0579d
+?
+api/messages.py,5\b\5b080af8acc59af5aa594f2a5754c3ee0860a5fe
