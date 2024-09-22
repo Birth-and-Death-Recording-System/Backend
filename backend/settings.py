@@ -162,8 +162,10 @@ EMAIL_PORT = "25"
 CORS_ALLOWED_ORIGINS = [
     "http://*",
     "https://*",
-    "http://localhost:4200"
+    "http://localhost:4200",
 ]
+
+CORS_ALLOW_CREDENTIALS = True
 
 DATE_INPUT_FORMATS = [
     '%Y-%m-%d',  # 'yyyy-mm-dd'
@@ -176,5 +178,5 @@ DATE_INPUT_FORMATS = [
 ]
 
 LOGIN_REDIRECT_URL = 'http://localhost:8000/births/'
-# CSRF_COOKIE_SECURE = True  # Set to True if using HTTPS
-# CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SECURE = True  # Set to True if using HTTPS
+CSRF_COOKIE_HTTPONLY = True

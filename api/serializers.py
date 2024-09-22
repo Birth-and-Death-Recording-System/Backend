@@ -1,4 +1,7 @@
+from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
+
 from .models import User, Profile, Birth, Death, DeathRecord, BirthRecord
 from .models import ActionLog
 import re
@@ -74,6 +77,25 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ('id', 'first_name', 'username', 'last_name', 'email', 'phone_number', 'gender',
                   'phone_number', 'gender', 'birth_date')
 
+    def __init__(self, *args, **kwargs):
+        super(ProfileSerializer, self).__init__(*args, **kwargs)
+        # Make all fields optional if it's an update (PUT request)
+        if self.instance:
+            for field in self.fields:
+                self.fields[field].required = False
+
+
+    def validate_phone_number(self, value):
+        """
+        Optionally, you can validate the phone number format to ensure it's valid.
+        Here, we are assuming phone numbers start with a '0' and are numeric.
+        """
+        if not value.startswith('0'):
+            raise serializers.ValidationError("Phone number should start with '0'.")
+        if not value.isdigit():
+            raise serializers.ValidationError("Phone number should contain only digits.")
+        return value
+
 
 class ChangePasswordSerializer(serializers.Serializer):
     current_password = serializers.CharField(required=True, max_length=255)
@@ -99,6 +121,10 @@ class ChangePasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 {"new_password": "New password cannot be the same as the current password."})
 
+        try:
+            validate_password(new_password, user=user)
+        except ValidationError as e:
+            raise serializers.ValidationError({"new_password": list(e.messages)})
         return attrs
 
 
@@ -120,6 +146,13 @@ class DeathSerializer(serializers.ModelSerializer):
     class Meta:
         model = Death
         fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super(DeathSerializer, self).__init__(*args, **kwargs)
+        # Make all fields optional if it's an update (PUT request)
+        if self.instance:
+            for field in self.fields:
+                self.fields[field].required = False
 
 
 class ActionLogSerializer(serializers.ModelSerializer):

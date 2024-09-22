@@ -31,9 +31,11 @@ logger = logging.getLogger(__name__)
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def login_user(request):
+    print(request.data)
     try:
         serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid():
+            logger.info("login user")
             username = serializer.validated_data['username']
             password = serializer.validated_data['password']
             user = authenticate(username=username, password=password)
@@ -113,7 +115,7 @@ def user_profile(request):
 @authentication_classes([SessionAuthentication, TokenAuthentication])
 def change_password(request):
     logger.info(f"User {request.user.username} change password.")
-    serializer = ChangePasswordSerializer(data=request.data)
+    serializer = ChangePasswordSerializer(data=request.data, context={'request': request})
     if serializer.is_valid():
         user = request.user
         new_password = serializer.validated_data['new_password']
