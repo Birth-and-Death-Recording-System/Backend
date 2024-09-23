@@ -59,9 +59,9 @@ SWAGGER_SETTINGS = {
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.BasicAuthentication',
-        # 'rest_framework.authentication.TokenAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
+        # 'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
     )
 }
 
@@ -162,8 +162,10 @@ EMAIL_PORT = "25"
 CORS_ALLOWED_ORIGINS = [
     "http://*",
     "https://*",
-    "http://localhost:4200"
+    "http://localhost:4200",
 ]
+
+CORS_ALLOW_CREDENTIALS = True
 
 DATE_INPUT_FORMATS = [
     '%Y-%m-%d',  # 'yyyy-mm-dd'

@@ -1,6 +1,7 @@
 from datetime import date
 
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import MinLengthValidator, RegexValidator
 from django.db import models
 from rand import generate_random_unique_number as unique_numbers
 from django_countries.fields import CountryField
@@ -31,7 +32,7 @@ class Profile(models.Model):
     username = models.CharField('Username', max_length=255, unique=True)
     birth_date = models.DateField('Birth', blank=True, null=True)
     email = models.EmailField('Email', null=False)
-    phone_number = models.IntegerField('Phone Number', blank=True, default=0000000000)
+    phone_number = models.CharField('Phone Number', blank=True, default='', max_length=10, validators=[MinLengthValidator(10), RegexValidator(regex=r'^\d{10}$', message='Phone number must be 10 digits long and contain only numbers.')],)
     gender = models.CharField('Gender', max_length=10, choices=GENDER_CHOICES, default='M')
 
     def __str__(self):
@@ -114,7 +115,7 @@ class Death(models.Model):
     Email_Address = models.EmailField("Email Address", max_length=255, blank=True)
 
     def __str__(self):
-        return self.first_name
+        return str(self.id) + " " + self.first_name
 
 
 class ActionLog(models.Model):

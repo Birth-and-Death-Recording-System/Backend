@@ -1,3 +1,6 @@
+import logging
+
+from django.contrib.auth import authenticate
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError
 from django.core.mail import EmailMultiAlternatives
@@ -9,21 +12,18 @@ from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from rest_framework import status, viewsets, generics, permissions
 from rest_framework.authentication import TokenAuthentication, BasicAuthentication, SessionAuthentication
+from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
-
-from api.models import User, Birth, Death, DeathRecord, BirthRecord
+from .messages import INVALID_CREDENTIALS, UNEXPECTED_ERROR, PROFILE_NOT_FOUND, RESET_EMAIL_SENT, PASSWORD_CHANGED, \
+    EMAIL_DOES_NOT_EXIST
+from api.models import User, Birth, Death, DeathRecord, BirthRecord, Profile
+from .models import ActionLog
+from .serializers import ActionLogSerializer
 from .serializers import UserSerializer, ProfileSerializer, ChangePasswordSerializer, ResetPasswordSerializer, \
     ResetPasswordConfirmSerializer, BirthSerializer, DeathSerializer, DeathRecordSerializer, BirthRecordSerializer, \
     UserLoginSerializer
-from rest_framework.authtoken.models import Token
-from django.shortcuts import get_object_or_404
-from django.contrib.auth import login as auth_login, authenticate
-from .models import ActionLog
-from .serializers import ActionLogSerializer
-
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -31,18 +31,22 @@ logger = logging.getLogger(__name__)
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def login_user(request):
+    print(request.data)
     try:
         serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid():
+            logger.info("login user")
             username = serializer.validated_data['username']
             password = serializer.validated_data['password']
             user = authenticate(username=username, password=password)
             if user is not None:
-                auth_login(request, user)
+                # auth_login(request, user)
+                Token.objects.filter(user=user).delete()
                 token, _ = Token.objects.get_or_create(user=user)
+                logger.info(f"User {user.username} logged in successfully.")
                 return Response(data={
                     'token': token.key,
-                    'status': status.HTTP_200_OK,
+                    # 'status': status.HTTP_200_OK,
                     'userData': {
                         'id': user.id,
                         'username': user.username,
@@ -50,71 +54,90 @@ def login_user(request):
                         'first_name': user.first_name,
                         'last_name': user.last_name,
                     }
-                })
+                }, status=status.HTTP_200_OK)
             else:
-                return Response({'detail': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
+                logger.warning(f"Invalid login attempt for username: {username}")
+                return Response({'error': INVALID_CREDENTIALS}, status=status.HTTP_400_BAD_REQUEST)
         else:
+            logger.warning("Login serializer validation failed.")
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     except ValidationError as e:
-        return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        logger.error(f"ValidationError occurred: {str(e)}")
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        logger.error(f"An unexpected error occurred: {str(e)}")
+        return Response({'error': UNEXPECTED_ERROR},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+@authentication_classes([TokenAuthentication])
 def signup(request):
     serializer = UserSerializer(data=request.data)
+    logger.info(f"User {request.user.username} signing up.")
     if serializer.is_valid():
         user = serializer.save()
-        user.set_password(request.data['password'])
-        user.save()
         token, _ = Token.objects.get_or_create(user=user)
+        logger.info(f"User {user.username} logged in successfully.")
         return Response({'token': token.key, "user": serializer.data}, status=status.HTTP_201_CREATED)
+    logger.error(f"User {request.user.username} signup failed.")
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET', 'PUT'])
 @permission_classes([IsAuthenticated])
-@authentication_classes([SessionAuthentication, TokenAuthentication, BasicAuthentication])
+@authentication_classes([TokenAuthentication])
 def user_profile(request):
-    profile = request.user.profile
+    try:
+        profile = request.user.profile  # Make sure the user model has a OneToOneField for the profile
+    except Profile.DoesNotExist:
+        logger.warning(f"User {request.user.username} has no profile.")
+        return Response({'error': PROFILE_NOT_FOUND}, status=status.HTTP_404_NOT_FOUND)
+
     if request.method == 'GET':
         serializer = ProfileSerializer(profile)
+        logger.info(f"User {request.user.username} profile: {serializer.data}")
         return Response(serializer.data)
 
     if request.method == 'PUT':
         serializer = ProfileSerializer(profile, data=request.data)
         if serializer.is_valid():
             serializer.save()
+            logger.info(f"User {request.user.username} profile: {serializer.data}")
             return Response(serializer.data, status=status.HTTP_200_OK)
+        logger.warning(f"User {request.user.username} profile: {serializer.errors}")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
-@authentication_classes([SessionAuthentication, TokenAuthentication, BasicAuthentication])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
 def change_password(request):
-    serializer = ChangePasswordSerializer(data=request.data)
+    logger.info(f"User {request.user.username} change password.")
+    serializer = ChangePasswordSerializer(data=request.data, context={'request': request})
     if serializer.is_valid():
-        # No need to fetch individual fields, serializer data already validated
         user = request.user
         new_password = serializer.validated_data['new_password']
-
-        # No need to check new_password and confirm_password separately, already validated
         user.set_password(new_password)
         user.save()
-        return Response({'message': 'Password changed successfully.'}, status=status.HTTP_200_OK)
+        logger.info(f"User {user.username} changed password.")
+        return Response({'message': PASSWORD_CHANGED}, status=status.HTTP_200_OK)
     else:
+        logger.warning(f"User {request.user.username} changed password.")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])
 def reset_password(request):
     serializer = ResetPasswordSerializer(data=request.data)
+    logger.info(f"User {request.user.username} reset password.")
     if serializer.is_valid():
         email = serializer.validated_data['email']
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            return Response({'message': 'User with this email does not exist.'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'message': EMAIL_DOES_NOT_EXIST}, status=status.HTTP_404_NOT_FOUND)
 
         uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
         token = default_token_generator.make_token(user)
@@ -132,29 +155,24 @@ def reset_password(request):
         )
         msg.attach_alternative(html_content, "text/html")
         msg.send()
-
-        # Send email
-        # send_mail(
-        #     subject='Password Reset Request',
-        #     from_email='app.debugmail.io',
-        #     message=text_content,
-        #     recipient_list=[email],
-        #     fail_silently=False,
-        #     html_message=html_content
-        # )
-
-        return Response({'message': 'Password reset email has been sent'}, status=status.HTTP_200_OK)
+        logger.info(f"User {request.user.username} reset password email sent.")
+        return Response({'message': RESET_EMAIL_SENT}, status=status.HTTP_200_OK)
     else:
+        logger.error(f"User {request.user.username} reset password failed.")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])
 def reset_password_confirm(request, uidb64, token):
+    logger.info("Password reset request received for UID: %s", uidb64)
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
         user = User.objects.get(pk=uid)
-    except (TypeError, ValueError, OverflowError, User.DoesNotExist, ValidationError):
+        logger.info("User found for UID: %s", uidb64)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist, ValidationError) as e:
         user = None
+        logger.warning("Error decoding UID or fetching user: %s", str(e))
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     if user and default_token_generator.check_token(user, token):
         serializer = ResetPasswordConfirmSerializer(data=request.data)
@@ -162,11 +180,14 @@ def reset_password_confirm(request, uidb64, token):
             new_password = serializer.validated_data['new_password']
             user.set_password(new_password)
             user.save()
-            return Response({'success': 'Password reset successfully'}, status=200)
+            logger.info("Password reset successfully for user: %s", user.username)
+            return Response({'success': 'Password reset successfully'}, status=status.HTTP_200_OK)
         else:
-            return Response(serializer.errors, status=400)
+            logger.warning("Password reset validation failed: %s", serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     else:
-        return Response({'error': 'Invalid password reset link'}, status=400)
+        logger.warning("Invalid password reset attempt for UID: %s", uidb64)
+        return Response({'error': 'Invalid password reset link'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET'])
